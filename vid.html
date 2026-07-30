@@ -353,6 +353,25 @@
   #historyTab .upload-trigger{
     cursor:pointer;
   }
+  #historyTab .history-controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  #historyTab .sort-select{
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    color:var(--muted);
+    border-radius:6px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:5px 8px;
+    cursor:pointer;
+    outline:none;
+    transition:border-color .15s ease,color .15s ease;
+  }
+  #historyTab .sort-select:hover{border-color:#3a4356;color:var(--text);}
+  #historyTab .sort-select:focus{border-color:var(--gold);}
   #historyTab .view-toggle{
     display:flex;
     gap:6px;
@@ -694,9 +713,20 @@
         <div class="section">
           <div class="section-label">
             <span class="upload-trigger" onclick="document.getElementById('historyUpload').click()">01 — Generation History</span>
-            <div class="view-toggle">
-              <button type="button" class="view-btn active" data-view="list" onclick="setView(this,'list')" title="List view">☰</button>
-              <button type="button" class="view-btn" data-view="grid" onclick="setView(this,'grid')" title="Grid view">▦</button>
+            <div class="history-controls">
+              <select id="sortSelect" class="sort-select" onchange="handleSortChange(this.value)" title="Sort videos">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="duration-desc">Longest duration</option>
+                <option value="duration-asc">Shortest duration</option>
+                <option value="price-desc">Price: high to low</option>
+                <option value="price-asc">Price: low to high</option>
+                <option value="name-asc">Name (A–Z)</option>
+              </select>
+              <div class="view-toggle">
+                <button type="button" class="view-btn active" data-view="list" onclick="setView(this,'list')" title="List view">☰</button>
+                <button type="button" class="view-btn" data-view="grid" onclick="setView(this,'grid')" title="Grid view">▦</button>
+              </div>
             </div>
           </div>
           <div class="history-total">
@@ -823,11 +853,58 @@
   const historyUpload = document.getElementById('historyUpload');
   const videoList = document.getElementById('videoList');
 
+  let allRecords = [];          // in-memory cache of everything loaded from Supabase
+  let currentSort = 'newest';   // default sort: most recently uploaded first
+
   function setView(btn, view) {
     document.querySelectorAll('#historyTab .view-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     videoList.classList.remove('list-view', 'grid-view');
     videoList.classList.add(view === 'grid' ? 'grid-view' : 'list-view');
+  }
+
+  // Returns a NEW sorted array — never mutates the array passed in.
+  function sortRecords(records, mode) {
+    const sorted = [...records];
+    switch (mode) {
+      case 'oldest':
+        sorted.sort((a, b) => new Date(a.added_at) - new Date(b.added_at));
+        break;
+      case 'duration-desc':
+        sorted.sort((a, b) => Number(b.duration) - Number(a.duration));
+        break;
+      case 'duration-asc':
+        sorted.sort((a, b) => Number(a.duration) - Number(b.duration));
+        break;
+      case 'price-desc':
+        sorted.sort((a, b) => Number(b.price) - Number(a.price));
+        break;
+      case 'price-asc':
+        sorted.sort((a, b) => Number(a.price) - Number(b.price));
+        break;
+      case 'name-asc':
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'newest':
+      default:
+        sorted.sort((a, b) => new Date(b.added_at) - new Date(a.added_at));
+        break;
+    }
+    return sorted;
+  }
+
+  function renderList(records) {
+    videoList.innerHTML = '';
+    records.forEach(renderVideoItem);
+  }
+
+  function renderSorted() {
+    renderList(sortRecords(allRecords, currentSort));
+  }
+
+  function handleSortChange(mode) {
+    currentSort = mode;
+    renderSorted();
   }
 
   // Pricing helper (same as described)
@@ -848,11 +925,6 @@
   function updateTotalCost(records) {
     const total = records.reduce((sum, r) => sum + parseFloat(r.price), 0);
     document.getElementById('historyTotalCost').textContent = `$${total.toFixed(2)}`;
-  }
-
-  async function refreshTotalCost() {
-    const records = await getAllVideoRecords();
-    updateTotalCost(records);
   }
 
   function renderVideoItem(record) {
@@ -876,16 +948,16 @@
 
   async function handleDelete(id, storagePath, btn) {
     await deleteVideoRecord(id, storagePath);
-    const item = btn.closest('.video-item');
-    if (item) item.remove();
-    await refreshTotalCost();
+    allRecords = allRecords.filter(r => r.id !== id);
+    renderSorted();
+    updateTotalCost(allRecords);
   }
 
   async function loadHistory() {
     try {
-      const records = await getAllVideoRecords();
-      records.forEach(renderVideoItem);
-      updateTotalCost(records);
+      allRecords = await getAllVideoRecords();
+      renderSorted();
+      updateTotalCost(allRecords);
     } catch (err) {
       console.error('Failed to load video history:', err);
     }
@@ -948,8 +1020,9 @@
 
       try {
         const savedRecord = await saveVideoRecord(draftRecord, file);
-        renderVideoItem(savedRecord);
-        await refreshTotalCost();
+        allRecords.push(savedRecord);
+        renderSorted();
+        updateTotalCost(allRecords);
       } catch (err) {
         console.error('Failed to save video to Supabase:', err);
         alert('Could not upload this video. Check your Supabase URL/key and bucket policies.');
