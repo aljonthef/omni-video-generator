@@ -1,8 +1,11 @@
-# The Tantrums — Open Play Queue
+# 4stakk — The Tantrums Open Play Queue
 
 Pickleball open-play queue app for The Tantrums club. Single self-contained page (`index.html`),
 mobile-first, built in an earlier Claude session and published as a Claude artifact:
 https://claude.ai/artifact/Q6MGtSkko6m5bHfbX5FQDk (shared with anyone who has the link).
+
+**Site name: 4stakk.** The Tantrums stays as the club branding (logo, header, leaderboard image).
+Saved data still uses the `tantrums-queue` storage key so existing sessions are not lost.
 
 `index.html` here is the live artifact's source as of version `1791713567-e07e`.
 
