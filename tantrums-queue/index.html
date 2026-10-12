@@ -1,0 +1,806 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tantrums Queue</title>
+<style>
+  :root { --red:#E63A2E; --orange:#FF8A1F; --cream:#FFF4E2; --ink:#151515; --line:#E9D9BF; --muted:#8a7d6b; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--cream); color:var(--ink); font:16px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; padding-bottom:84px; }
+  .display { font-family:"Arial Rounded MT Bold", ui-rounded, "Nunito", system-ui, sans-serif; font-weight:900; letter-spacing:.02em; }
+  header { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--red); color:var(--cream); }
+  header img { width:44px; height:44px; border-radius:50%; border:2px solid var(--cream); }
+  header h1 { margin:0; font-size:20px; line-height:1; }
+  header small { display:block; font-size:11px; letter-spacing:.12em; opacity:.85; }
+  header .sp { flex:1; }
+  main { max-width:720px; margin:0 auto; padding:16px; }
+  h2 { font-size:22px; margin:4px 0 12px; }
+  button, select, input { font:inherit; }
+  .btn { border:2px solid var(--ink); background:#fff; color:var(--ink); border-radius:14px; padding:12px 16px; font-weight:800; min-height:48px; cursor:pointer; }
+  .btn.red { background:var(--red); color:#fff; }
+  .btn.orange { background:var(--orange); }
+  .btn.ghost { border-color:transparent; background:transparent; }
+  .btn:disabled { opacity:.4; }
+  header .btn { min-height:40px; padding:6px 12px; background:var(--cream); }
+  .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); }
+  .card { background:#fff; border:2px solid var(--ink); border-radius:20px; padding:14px; box-shadow:4px 4px 0 var(--ink); }
+  .court-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .court-head .display { font-size:20px; }
+  .timer { font:800 22px ui-monospace, Consolas, monospace; padding:2px 10px; border-radius:10px; background:var(--cream); }
+  .timer.over { background:var(--red); color:#fff; animation:pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity:.55; } }
+  .team { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px; background:var(--cream); }
+  .team .names { flex:1; font-weight:700; }
+  .team input { width:58px; text-align:center; border:2px solid var(--line); border-radius:10px; padding:8px 4px; }
+  .team.won { background:#FFE3C2; outline:2px solid var(--orange); }
+  .pill { border:2px solid var(--ink); background:#fff; border-radius:999px; padding:6px 10px; font-weight:800; font-size:12px; min-height:36px; cursor:pointer; }
+  .team.won .pill { background:var(--ink); color:var(--cream); }
+  .vs { text-align:center; font-size:12px; color:var(--muted); margin:4px 0; font-weight:800; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .chip { display:inline-block; font-size:11px; font-weight:800; padding:1px 6px; border-radius:6px; margin-left:4px; vertical-align:middle; }
+  .l1 { background:#FFE3C2; } .l2 { background:var(--orange); } .l3 { background:var(--red); color:#fff; }
+  .badge { font-size:12px; font-weight:800; background:var(--orange); border-radius:8px; padding:2px 8px; }
+  .empty { text-align:center; padding:18px 0 4px; color:var(--muted); }
+  form.add { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  form.add input { flex:1 1 160px; min-height:48px; border:2px solid var(--ink); border-radius:14px; padding:0 14px; }
+  .seg { display:flex; border:2px solid var(--ink); border-radius:14px; overflow:hidden; }
+  .seg label { display:flex; }
+  .seg input { display:none; }
+  .seg span { padding:12px 14px; font-weight:800; cursor:pointer; min-height:44px; }
+  .seg input:checked + span { background:var(--ink); color:var(--cream); }
+  ol.q { list-style:none; margin:0; padding:0; }
+  ol.q li { display:flex; align-items:center; gap:8px; padding:10px 12px; background:#fff; border:2px solid var(--line); border-radius:14px; margin-bottom:8px; }
+  ol.q li.paused { opacity:.5; }
+  ol.q .n { width:28px; font-weight:900; color:var(--red); }
+  ol.q .name { flex:1; font-weight:700; }
+  ol.q .meta { font-size:12px; color:var(--muted); }
+  ol.q .btn { min-height:40px; padding:6px 10px; }
+  table { width:100%; border-collapse:collapse; background:#fff; border:2px solid var(--ink); border-radius:16px; overflow:hidden; }
+  th, td { padding:10px; text-align:left; border-bottom:1px solid var(--line); }
+  th { background:var(--ink); color:var(--cream); font-size:12px; letter-spacing:.08em; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .set { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0; border-bottom:1px solid var(--line); }
+  .set p { margin:2px 0 0; font-size:13px; color:var(--muted); }
+  .stepper { display:flex; align-items:center; gap:10px; font-weight:900; font-size:20px; }
+  .stepper .btn { width:48px; padding:0; }
+  .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+  nav { position:fixed; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(5,1fr); background:var(--ink); padding-bottom:env(safe-area-inset-bottom); }
+  nav button { background:none; border:0; color:var(--cream); padding:12px 0 14px; font-weight:800; font-size:13px; opacity:.6; cursor:pointer; }
+  nav button b { display:block; font-size:20px; }
+  nav button.on { opacity:1; color:var(--orange); }
+  .muted { color:var(--muted); }
+  .hint { margin:-6px 0 12px; font-size:13px; }
+  .shot { width:100%; height:auto; border-radius:12px; border:2px solid var(--ink); -webkit-touch-callout:default; -webkit-user-select:auto; user-select:auto; }
+  .shot-tip { background:#fff; border:2px dashed var(--orange); border-radius:12px; padding:10px 12px; }
+  .pname { all:unset; cursor:pointer; border-bottom:2px dotted var(--muted); }
+  .pname:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .sheet-bg { position:fixed; inset:0; z-index:20; background:rgba(21,21,21,.55); display:flex; align-items:flex-end; justify-content:center; }
+  .sheet { background:var(--cream); width:100%; max-width:560px; max-height:78vh; overflow:auto; border-radius:22px 22px 0 0; padding:18px 16px calc(18px + env(safe-area-inset-bottom)); display:grid; gap:12px; }
+  .sheet h2 { margin:0; }
+  .sheet p { margin:0; }
+  .opts { display:grid; gap:8px; }
+  .opt { display:flex; justify-content:space-between; align-items:center; gap:10px; background:#fff; border:2px solid var(--ink); border-radius:14px; padding:12px 14px; font:inherit; font-weight:800; min-height:52px; cursor:pointer; text-align:left; }
+  .upnext { margin-top:16px; background:var(--red); color:var(--cream); border:2px solid var(--ink); border-radius:20px; padding:14px; box-shadow:4px 4px 0 var(--ink); display:grid; gap:10px; }
+  .uhead { display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .uhead .display { font-size:20px; }
+  .uto { font-size:12px; font-weight:800; letter-spacing:.06em; opacity:.85; }
+  .ugroup { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; background:var(--cream); color:var(--ink); border-radius:14px; padding:10px 12px; font-weight:800; font-size:17px; }
+  .uvs { font-size:11px; color:var(--muted); letter-spacing:.1em; }
+  .uopen { font-weight:700; font-size:14px; color:var(--muted); }
+  .unote { margin:0; background:var(--cream); color:var(--ink); border-radius:14px; padding:10px 12px; font-weight:600; }
+  .uthen { display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:14px; }
+  .uthen b { margin-right:2px; }
+  .uq { display:inline-flex; align-items:center; gap:5px; background:var(--cream); color:var(--ink); border-radius:999px; padding:3px 10px 3px 4px; font-weight:700; }
+  .uq i { font-style:normal; font-weight:900; font-size:11px; background:var(--ink); color:var(--cream); border-radius:50%; width:20px; height:20px; display:inline-grid; place-items:center; }
+  body.tv .upnext { margin-top:0; border:0; box-shadow:none; border-radius:24px; padding:clamp(14px,1.6vw,32px); gap:1vw; }
+  body.tv .uhead .display { font-size:clamp(20px,2.2vw,42px); }
+  body.tv .uto { font-size:clamp(12px,1.2vw,22px); }
+  body.tv .ugroup, body.tv .unote { font-size:clamp(20px,2.6vw,48px); padding:clamp(10px,1.2vw,24px); }
+  body.tv .uvs, body.tv .uopen { font-size:.5em; }
+  body.tv .uthen { font-size:clamp(14px,1.6vw,30px); gap:.6vw; }
+  body.tv .uq i { width:1.5em; height:1.5em; font-size:.7em; }
+  .ugroup .chip, .uq .chip { font-size:.6em; }
+  .chipbtn { border:0; cursor:pointer; font-family:inherit; min-width:28px; min-height:24px; }
+  body.tv { background:var(--ink); padding-bottom:0; }
+  body.tv header, body.tv nav { display:none; }
+  body.tv main { max-width:none; padding:2vw; }
+  .tvhead { display:flex; align-items:center; gap:1.5vw; color:var(--cream); margin-bottom:2vw; }
+  .tvhead img { width:6vw; min-width:56px; border-radius:50%; border:3px solid var(--cream); }
+  .tvtitle { font-size:clamp(28px,4vw,72px); line-height:1; }
+  .tvsub { font-weight:800; letter-spacing:.15em; font-size:clamp(12px,1.3vw,22px); opacity:.8; }
+  .tvexit { margin-left:auto; opacity:.45; }
+  .tvbody { display:grid; gap:2vw; }
+  .tvcourts { display:grid; gap:1.5vw; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); }
+  .tvcourt { background:var(--cream); border-radius:24px; padding:clamp(14px,1.6vw,32px); border:5px solid var(--cream); }
+  .tvcourt.fresh { border-color:var(--orange); box-shadow:0 0 0 6px var(--orange); }
+  .tvch { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:clamp(20px,2.2vw,42px); color:var(--red); margin-bottom:1vw; }
+  .tvch .timer { font-size:inherit; }
+  .tvteam { font-weight:800; font-size:clamp(20px,2.5vw,46px); line-height:1.15; }
+  .tvvs { color:var(--muted); font-weight:900; margin:.5vw 0; font-size:clamp(12px,1.1vw,20px); letter-spacing:.1em; }
+  .tvempty { color:var(--muted); font-weight:800; font-size:clamp(18px,2vw,36px); padding:1.5vw 0; }
+  .tvteam .chip { font-size:.45em; }
+</style>
+
+<header>
+  <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAAQABAAD//gAQTGF2YzYxLjE5LjEwMAD/2wBDAAgICAkICQsLCwsLCw0MDQ0NDQ0NDQ0NDQ0ODg4REREODg4NDQ4OEBARERITEhERERETExQUFBgYFxccHB0iIin/xACqAAACAwEBAQAAAAAAAAAAAAAHBgQFAAMBAgEAAgMBAQEAAAAAAAAAAAAABgQFAAMBAgcQAAICAQIEAgcEBgkFAQAAAAIBBAMRAAUxEhMhQVEiYYEGcSMUoVIyQpHBojNi4bEV0UNUkvEkg3JzsoKTYxEAAgEDAQUFBQcEAgMBAAAAAgEDABEEIUExURIFIhNxYTJSgaGRQrEjFGLBM3LRkoJTY0MVwuEk/8AAEQgAYABgAwESAAISAAMSAP/aAAwDAQACEQMRAD8AOWtpKrTFWtratWrVraqdz3iPtiESRXX2dqY9fe2x/DwH+J+zVrwRofNvcqtMY+KeRd6CA+oy9I//AHyq20ONzmPjvMkhb7jtcMsNLw+otT+xv4a90sb9t2/IP60vU/iwMnbDjTtvyJVp/gNNkr3i2qGTApI2GvyUp3F+gE19uhs/eO6OuTb48aAH/wCdaO1/9Vtibb9mtnIC2/LWk+/t6BQ/GouPByZFdBZe0fZXxopHpAm+bJlkmLg20PyVEAfeN296ds3O1fe6HIn/AJi0L7d53S55ObJf/KYr9AtLTakvuE37qRcsj3k6GvwPL6sjHF8Oe/2UYD03CBWUAe9XooP3iOvvbte51rxfRRf+JaFobvudbyE2Uv8AmN/0trT3eW3ia91IqU19ToP/AASfpyMcnw5rfaqMX0/DLfBH8rUWI3vNtMk+RSOkfDkvEqS/bSH7dDcfeOVYuSbTGnh4q6sVZ7LASafrw9PqUXtt46Ukp39SRUFydPyo1fk5lxBol8KKT6REnzQSSQF5Nsfk6MqeVlPKfBrhocbXJrbztEo6LOL26YXPTZ6qLG+z8u6epCloyX0F/iVBW6iDLgkDTLiRDsyIlYl/NbaI+qbbd5qnkVBgUaXX+9jWdiX8QP8AOPrWmqzE+bS1nwofpqfFKFI01JGXpkHd4Pg/KrnW1pXKVq1tbVq1ate68bQptvCXdvyS8dWrVq791VG8bqtsoHkHqyLi6celcbLH5/wj4v2aTpe4vlkb0/3ljKJtYlwAF+ORjz4+1414M+RcXsVYmVrm/APDjTWLjPIN3fKALmM39K/q9lS0GPzlHhrcrS5DW17AqHPnPaSsELFfuly/3UvsSj5/uKPBNLs2uGk3Ly2TbbeW33bb4tvzevBn3e25ve+HhSj1d3TGJivN5WQsMUH93Hu7y31FxojSQpIVYVuVetsmyJsm3ltvLbfi2+7eu8aNbMuCmkHZYbwIjxf9iXi32WuvXXbXoAIysld1UIikhSSW5Lcqynnjx42chIRW1/pXDV+EODHbDlLdLxeD6dvQgUkuIFIQlZcY/mVItJ9m1rxTEjxcT94+YvYGtqGi6jm5raxgUQe2Xqf6Kl/TMEi1H0go2al/cUA7sfGy6Rl/HC1hXl9WiH049x4t60S0LvAyj1PMkv5XtS1pktkUIunKgQbm1xhuyBIWfujYdscyfgJEGddrWPNxpl95C417S1+zWiihfuepwdqPIclvpPW/zpb0xx9mjyzK+i6y+HQJ2Sq+TpzqOmDPonR3fPZjlrMcgXFayp8MQZCFgaIHtoooZPrpRwSCcfJkLRJ+l+fu4Ut58njTJM24boI31QLIlnWEK6x+pPr1OtkRcl4q3NRYErEKA89tI1J5eKEaXJq9N2tEtk1ZpNPentoV6P1aeaUhyDXLZu52Vnst4122/cP626UaVa6pdbX0U/gYkuFVz/MJcE37dLDTB4aaa4p9mv16UA+fRvtL0v8ArS9mnwpvMxPwfNLEPNCX7sO9W4jwtU5cZFo0SfvTo1bPuRzAsokiqpkZ8l9fg/K0P4D+zSTF3Sy6PVuYd5W2sapa8ZEM+yMvNj5+azqUF8y13rfS4yMh5/qHR+aoByoFExMHzRSagX/q/NVNT4gwynjPSKe5RP2JVs8Huon6+KrAurCwHzCYohfmJLKemq4taG66QsSaejTs/FVSe80g6NqtGv8AeSGMavzza8P9nOuG+fMn7LT4FMdj/wCMM/r14ldhfF6L31T9Uf8AL9Kc6fGjyRZekLyPwFXr1h9mHKL/AIuX+4qH3vFaq5lcIP3UCmuOK8OflTsL4suPw1BlFXK3O0riYhZKJ2EuKB2937B0nO+0h2CrV5dil13N60T9Ii5oTyGu3MZF7r6Kt4eaDAFAu0MXZ8bVc7fCqtgV20wB3GwzuG9ZtZU8nL06xGk0VfVTJ9YhIU1hrV1SRwLrHIcbbttNXxxKumkykDYiGlRbaXZKsPk+dbYfYcY5OLT+JBDJG2W/7KcXcximNkqH+s9QzsbKQRsgBIbWtrxeu+oGSTJnlLvWRO+53v56bKXrigRMQ4N5i5ibk2mSG2urtjbargfIVpFlXnWTfKOF3eowzLNwhqkpInDRlFqUaoA61dRusLDZ9ViyQokNfJjOo/LRYUJnELInonbQVxrLqPV5ozcMYiklvavf3VLhll1aaMJzERjXpTtzlxtWfTeiQEPfmRNttpJ2tU+OJgHKSAUPYABYEAXAVjVRubEgCujquyv0Bt69lar7YZkwfNa+34Wnl+OhaQud3u23vb2upXEjK5GfLynqx5U7+SvuonQiCsklbhWM+LIcY8m9aJ81refnTB20rzNzlbdRHjx0e5SjBl1CFCkCeOc0PKuPoiOcvHd6h6mYcIcqUzJKGNPl5Vtfk3W9R8sk+OIxAnNLa7b2Li6nzRrosH0rDd9gtRwHmssIX+VpiSAVlk2XKOl6LOHdyuCbDGqZHBYMOoBdNkk1lEiHDaf4mnnOlsfnmF2SSAX23oK8eLqULGLDYd3I3ET1ErNN/KnDyBisnq3okt9R2IY5kzCePlkFb07U009p1t18KVcID0aujbXUJg8ERHiRVZZ6fYAL0B5c4beq+PYdRghZPuI4bZZXDvltv4vvrvTMnCxIUpJGzN3trZUvPGBgTaS03rSo/q2LnZcv3QCgFaN+p0XOMUFuFMVe70yYsahbpdQatssGOV0jkrots5KY86ZHbuosEk+XJkIZQmn2elcIAzJUwmdkSOK6kq/iA0SRwVA1vPPfbaD6aHGO5E8LGiXvorjqu1u86hsH7yCMzaYx6efMnp8K+bfh5mD9Vx9TS3e6iHKElkFDEm5JP7ULWt6n+8Jv6wKTPq3x6Rpk3Ya6twsm36SRFyixDnayeM657r9RIk2TLI10eu8l0uoBLIiKEfSawy5Um9aZhCUuitbfWMyNmzYtJ8al+gxSR4aZldG7h5Ld9tM9OcMMAQDKEhxrtIXfW+vurr7uXDTuVddneqUijWrwY2rCz8CxqprN1WAa4gQkviLzrsD7dthaOshdmq89XjZ4rNeqJqQX4b6dmHnjMeItfNUX/dkyGFZEN5ODfZGfnyi8h9jx7NcdqLl3zdgXCwYt+PWQd/6dSMfptwdvcqov7w/OzoH6gk5RkW6YRk973/GvWSr4mM9ouQPk6+96ar3LZLXwUo6/bYGFre9VJltvXrWTh21SR8/ll6X2PPs1Tfbj8a5Kuzf2WnXMRMoMsVv7tP5FV6aSWRyPdKJRv/JafGhJMF1y5AviN1qfsN6tveKOh3Erw/dTACVW/NWD6X6CzpA12yXnWk6sd9hK9G2K0ePE+ID9lJdJl5sbu36oScZLwelTYG3zd52wAiBy2RDkoXYPybgkiHUAbGJCNw8uFzLlYk02tS9h3CIP0VRmdN8d2jTzY+ltdjIh6zTRA+djl916I6Zij/EQcruuUuZPY2q94uQKBA9GqherNYub3txfeBykK9Q+dvOr1jpmQcsmQHbGybX1Ky2Laqp9uppjW30CVwHWS6se8PmU2iIi/mYwXooeBEsPKeNW25R5tVTn3UyK0hVM8jF5QrKom8y7FyD8mS139EbPwd9QPURmRJyAk1uJPeuFqmup4f4mNEFmYape0uFNYBREP3Ztp68rW5+NQnS8z8NJyl6C+DqisiXiTQgyWezWMfy1aABOlD1Mtj2sXivBp/Dx8dREeVEwTZcrtuqJLQ9VbXc6NkYtcKVTT1WqqGtrosVbt5mQpp8pkKIW+bkLla5hT/X56nEF40IayB2dlz2JtJZ7lhfiaXBZWXxenX1CUGajaQlxW7zVKg42dzT5ddFt8q8zRjMfNqtLaO1151yTmafLa/nWqiRqebpUVV8ywXJWI8y8nhd18dUcwqwVo/X3SJAi1TUBCLG9/hfLHEcvOMjZlCOc6p5E0luaQituu6kYOZ8r7gI43qZPW4W/N9qrgRBG7iKTe1f1pGW1n96Zl9IrY/dVuqxpuBV0rDzzF39H1Ly16Vt91qi01Oy+70KRTa5jx6Vja/BTWnzHZ4Lh3a1HuUzHtG/CmsTEeVMuVdlFdv6bXqVZE1vqPy8kcWG5PtNaLbetHKdGKQbo2+xSCoP53WMYzjI+QuROtXP0nn0gSbz3xqVMo93tkzFkhbucmsAGxVXykdtmMn9ZY7lQIE+FODJBxWnsTqGPBF3QgZ63Te1v7KmSHGh3gCtusKvSeTh5EkzlUiC4sXbYNv1qNx4M3N/bcjvfmIisFq25biB7e7bzsKRulEa8Y2SKuMnyn1OY+69JH0kvSVZ8r7JarZG6wd1uIpsIYaPCUmNbbYVCFco9SkxQHUKSRdNCxXBauXKKj5XvaT8KxKSDIKxLlb3FTPRMOY8pSj2QjJpl7X5afjxuo9LjRRmMoDqUVtm1p8aoRTNoV3ZNJe140w7dtNtW9U0W8rCpqSVgvmrOgFzq0SXZgfbD9eo9b1TIwkEtns1v5URyPlA3wFv5KojK6hHP08pI3rJ92h2onsp82wc77ujX93TEqfxQfy19e7Gb6Zc5rDmyrLB/7YvlH9emB/cPwGuxapl7RN0PZD//AB435ilL5uudQ7BxQ/6oxF/yerpjsrG0CA1zCYsSXmiWGv0a+9aVaQTYtNaNar3VyhjMgHZFu24slJ2xlbG874Z92h82PHHqxpv3vbLpPSlw2gmRXzVPwsH81JeovD+elTDmFhtDUfMa2MW7Nb18fKiPGyVFMGR/15Fgl4DItr8aicPICPmilV4pNC/K9hrzVBfPNpm3DbQmhZPg1scP/eQ8fMi2/mJDxdbeXw7f0RtMnHzpkPvHaqP/AI1BYea8djjzldP9mbYY7E3xqljT5kWwLK77Uw4JkyBrGGJATYsWuzTXDUbWQzSC00T0rOpObDxpwICiDXahSfzVMqmKi6Db3j2jtlj7uPaB27eRPi6SD50bP3fSrXgOlzW0sWJman93J7S2+OysKGSxM/Adovv4ti+tUT01BHmA26xh3J/mq3OOw9iv6JL2rSnyry1m+j83pnjts41pQv8A+SkWh4syf8XRRTWwOscWydtgDltoLfrb+/dsaIwjXzPzK3GeOlVLGuj0yJazz89ti+zfXKFFk5crtBikLe0lZKiumeXu21e7A1WFbIdtw1XutJHPm155q1Iv9GiLHJrKoqzlcVnUCveDAaWUaHZIjh0qJdtKsvqrTyhFk2Ho/lJi2lqaijABEY1yDvSS1fi6QHLkEeWy8nXzyY2JSd4u9k1HmfoB7eVbXRTL0TGlmcjZ2J3IE+y3xpcc6/H1EyNJi/UnbdzW1GIE7LCN8pEsku/Z44aYVve6gRl9XafO8mNuLgf/AKWog/QlrTIx5GZNa8FS6yZk/W6x6Z1HFDHjibYsVrw8afPpWCYoXCKtua0fzVVkSLP3NMoNDdQ/jlXvoxa/W7DwnjyXf1aaI/XkVjuO8W2HFrf+3jv0fqbPyhVUKQoM8SQ99ax4repvlVVEZduRtrYPH3Unk9ZiDsRLvDe7S/wrGZQQt42EAqRr7yXf3Y7blxq3KkYm27fAj29eXLjVwht5WK+nEyO24U/SVZMsBlL0EtMOzQL3Ye5TRSlXpIK/CNT+WofJ4/F/rpidp2S3tct/LbXAF+p73uXBVFYglc5ZdI4ScjXGR7h8axy5gQjBE7xhvL/Ye0n+lXkWNXEoqorWAqAQH4Jcfbxeu+tEklZbqtKSGUpkZbybb99eK2tq1atWtratWrVqh3HZyuuU2FZ9LMFfjx8u5fcuHxT4Z1fazILu4vlL7fGtKcgyuUO6lHvIns+oHxB7PCk6FW4Q4cq7kkh/U81/eWYMh/eA1+DPq7aJ0iNRLrdd9QWg/wApiiX28H61pMxEnquQuOx020nv1ooxMmfHG8Zfi4Vs/wC0Fwa20NBIcZcwEQvinagtJ2Lc4nc45GHhbT82trzRBn7UtEx+7gR23t8yXA/gA+pV/wDM/wC3Ue4TWy/hrTvd29LY++9HMPVMSbRScj9k+y/jQl+PZq08Uc3m1yl/cNB9rl49vj20Wj23f/8AG7fI9d8Nc37OdRtmtlSPLJ7SfiqO0Yluafg06B1Phf6Zw/hLp8aEmM8O/wANFoNt3/8Axe3UeumGs/tLUdUihk9oV4KjhkK3tLxdA5T4X+qc/wCcv9KG8TZtynfuo1iHxssXTrXrZnhfozomv3c+qae4Tpcz+Dn6NX+QP7dJDEZbLeOlPd1f1ERfCiybqOLBvkRP2R7TfyoRWe4/2YYovO3MXzKk2FBgw7VXj+uJvhRRn6Wp+d1nAkvHw89E6LCjQq+nHqrpHyBYz8Xxb9b0uAAP/IWz2abSS3K1TWTl5GSN7/hIPaL9w1+Vb6GZJZJS5jJk/N3qng7MZSBnbiY3yUvlVivkRl92seGV97/XTFrwg1uTu/gvCtKZmy0gcMCYR/UT9cj4k/0pKtratWrVra2rVq1a/9k=" alt="">
+  <div><h1 class="display">THE TANTRUMS</h1><small id="sync">OPEN PLAY QUEUE</small></div>
+  <div class="sp"></div>
+  <button class="btn" data-act="undo" id="undo">↶ Undo</button>
+</header>
+<main id="app"></main>
+<nav>
+  <button data-tab="courts"><b>🏓</b>Courts</button>
+  <button data-tab="queue"><b>☰</b>Queue</button>
+  <button data-tab="log"><b>📝</b>Log</button>
+  <button data-tab="stats"><b>🏆</b>Stats</button>
+  <button data-tab="settings"><b>⚙</b>Settings</button>
+</nav>
+
+<script type="module">
+const Q = (() => {
+// Open-play queue logic. Pure (no DOM): actions mutate the state they're given; UI saves it after.
+const court = (id) => ({ id, team1: [], team2: [], streak: 0, endsAt: null, waiting: false });
+
+const newState = () => ({
+  players: [], queue: [], courts: [court(1), court(2)],
+  mode: "stack", balance: true, gameMins: 15, nextId: 1, history: [],
+  met: {}, mates: {}, // how often each pair has shared a court / been partners, so line-ups keep mixing
+});
+
+// Snapshot before each action so a mis-tap can be undone.
+function snap(s) {
+  const { history, ...rest } = s;
+  s.history = [...history.slice(-11), JSON.stringify(rest)];
+}
+function undo(s) {
+  const h = s.history.pop();
+  return h ? { ...JSON.parse(h), history: s.history } : s;
+}
+
+const player = (s, id) => s.players.find((p) => p.id === id);
+const onCourt = (s, id) => s.courts.some((c) => c.team1.includes(id) || c.team2.includes(id));
+const eligible = (s) => s.queue.filter((id) => !player(s, id).paused);
+const prio = (s, id) => player(s, id).prio ?? 0; // games counted for rotation (newcomers start level with the rest)
+const minPrio = (s, not) => Math.min(...s.players.filter((p) => p.id !== not && !p.paused && !p.out).map((p) => p.prio ?? 0), Infinity);
+const key = (a, b) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+const cnt = (m, a, b) => m?.[key(a, b)] ?? 0;
+const bump = (m, a, b) => { m[key(a, b)] = cnt(m, a, b) + 1; };
+function combos(arr, k, from = 0, cur = [], out = []) {
+  if (cur.length === k) out.push(cur);
+  else for (let i = from; i < arr.length; i++) combos(arr, k, i + 1, [...cur, arr[i]], out);
+  return out;
+}
+
+const startPrio = (s, id) => { const m = minPrio(s, id); return m === Infinity ? 0 : m; };
+
+// The roster keeps every player between sessions; `out` = in the roster but not here today.
+// Adding a name that is already in the roster checks that player in instead of making a duplicate.
+function addPlayer(s, name, level = 2) {
+  const known = s.players.find((p) => p.name.toLowerCase() === name.trim().toLowerCase());
+  if (known) return known.out ? checkIn(s, known.id) : undefined;
+  snap(s);
+  const id = s.nextId++;
+  s.players.push({ id, name: name.trim(), level, paused: false, out: false, prio: startPrio(s) });
+  s.queue.push(id);
+}
+function checkIn(s, id) {
+  const p = player(s, id);
+  if (!p?.out) return;
+  snap(s);
+  Object.assign(p, { out: false, paused: false, prio: startPrio(s, id) });
+  s.queue.push(id);
+}
+// Leaves today's session, stays in the roster.
+function checkOut(s, id) {
+  if (onCourt(s, id)) return;
+  snap(s);
+  player(s, id).out = true;
+  s.queue = s.queue.filter((q) => q !== id);
+}
+function setLevel(s, id, level) {
+  snap(s);
+  player(s, id).level = level;
+}
+// Deletes the player from the roster for good.
+function removePlayer(s, id) {
+  if (onCourt(s, id)) return;
+  snap(s);
+  s.players = s.players.filter((p) => p.id !== id);
+  s.queue = s.queue.filter((q) => q !== id);
+}
+function togglePause(s, id) {
+  snap(s);
+  const p = player(s, id);
+  p.paused = !p.paused;
+  if (!p.paused) p.prio = Math.max(p.prio ?? 0, startPrio(s, id)); // no catch-up streak after a break
+}
+
+// Fewest games first, then longest waiting; the front of the line always plays. Among players tied on
+// games, choose the group that has shared a court least (and, with balance on, closest in level).
+// `fixed` = players already on court (winners staying on).
+function pick(s, n, fixed = []) {
+  const el = eligible(s).filter((id) => !fixed.includes(id));
+  if (el.length < n) return null;
+  const pos = new Map(s.queue.map((id, i) => [id, i]));
+  const sorted = [...el].sort((a, b) => prio(s, a) - prio(s, b) || pos.get(a) - pos.get(b));
+  // Extra games are a strong cost, not a hard rule: someone one game ahead can step in when that
+  // breaks up a group that keeps playing together.
+  const [head, ...pool] = sorted.slice(0, 9);
+  const hl = player(s, head).level, base = prio(s, head);
+  let best, bestScore = Infinity;
+  for (const c of combos(pool, n - 1)) {
+    const group = [head, ...c];
+    const all = [...fixed, ...group];
+    let sc = c.reduce((t, id) => t + pos.get(id) + 150 * (prio(s, id) - base), 0);
+    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) sc += 100 * cnt(s.met, all[i], all[j]);
+    if (s.balance) sc += 10 * group.reduce((t, id) => t + Math.abs(player(s, id).level - hl), 0);
+    if (sc < bestScore) { bestScore = sc; best = group; }
+  }
+  return best;
+}
+const take = (s, ids) => { s.queue = s.queue.filter((id) => !ids.includes(id)); };
+
+// Swap a player who can't play (on a court or locked in Up next) for someone waiting. The player
+// swapped out sits out and keeps their place at the front of the line for when they're back.
+function replacePlayer(s, outId, inId) {
+  const c = s.courts.find((x) => x.team1.includes(outId) || x.team2.includes(outId));
+  const inNext = (s.next ?? []).includes(outId);
+  if ((!c && !inNext) || !eligible(s).includes(inId) || (inNext && s.next.includes(inId))) return;
+  snap(s);
+  const sw = (arr) => arr.map((x) => (x === outId ? inId : x));
+  if (c) {
+    c.team1 = sw(c.team1); c.team2 = sw(c.team2);
+    take(s, [inId]);
+    s.next = (s.next ?? []).filter((x) => x !== inId);
+    s.queue.unshift(outId);
+  } else {
+    s.next = sw(s.next);
+  }
+  player(s, outId).paused = true;
+}
+
+// Of the 3 ways to pair 4 players: fewest repeat partners, then (balance on) the most even team levels.
+function split(s, [a, b, c, d]) {
+  const lv = (id) => player(s, id).level;
+  const score = ([t1, t2]) => 100 * (cnt(s.mates, ...t1) + cnt(s.mates, ...t2)) + (s.balance ? 10 * Math.abs(lv(t1[0]) + lv(t1[1]) - lv(t2[0]) - lv(t2[1])) : 0);
+  return [[[a, b], [c, d]], [[a, c], [b, d]], [[a, d], [b, c]]].reduce((x, y) => (score(y) < score(x) ? y : x));
+}
+
+// The locked "Up next" players first, topped up by the normal pick.
+function group(s, n, fixed = []) {
+  const el = eligible(s);
+  const head = (s.next ?? []).filter((id) => el.includes(id)).slice(0, n);
+  if (head.length === n) return head;
+  const more = pick(s, n - head.length, [...fixed, ...head]);
+  return more ? [...head, ...more] : null;
+}
+
+function fill(s, c, four = group(s, 4)) {
+  if (!four) return;
+  c.waiting = false;
+  take(s, four);
+  [c.team1, c.team2] = split(s, four);
+  c.streak = 0;
+  c.endsAt = Date.now() + s.gameMins * 60e3;
+}
+function fillCourt(s, courtId) {
+  const c = s.courts.find((x) => x.id === courtId);
+  if (c.team1.length || !group(s, 4)) return;
+  snap(s);
+  fill(s, c);
+}
+
+// A typed score decides the winner when it clearly does (organizers sometimes tap the wrong button).
+const byScore = (winner, score) => (score && score[0] !== score[1] ? (score[0] > score[1] ? 1 : 2) : winner);
+
+// winner: 1 or 2. score: optional [team1Points, team2Points].
+function endGame(s, courtId, winner, score) {
+  snap(s);
+  const c = s.courts.find((x) => x.id === courtId);
+  winner = byScore(winner, score);
+  s.matches ||= [];
+  s.matches.push({ id: (s.matches.at(-1)?.id ?? 0) + 1, court: c.id, at: Date.now(), t1: [...c.team1], t2: [...c.team2], winner, score: score ?? null });
+  const win = winner === 1 ? c.team1 : c.team2;
+  const lose = winner === 1 ? c.team2 : c.team1;
+  const off = [...win, ...lose];
+  s.met ||= {}; s.mates ||= {};
+  const mid = s.matches.at(-1).id;
+  for (const id of off) Object.assign(player(s, id), { prio: prio(s, id) + 1, last: mid });
+  for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) bump(s.met, off[i], off[j]);
+  bump(s.mates, ...win); bump(s.mates, ...lose);
+
+  const streak = c.streak + 1;
+  const two = s.mode === "winners" && streak < 2 && group(s, 2, win); // picked before losers rejoin the line
+  if (two) {
+    take(s, two);
+    s.queue.push(...lose);
+    for (const w of s.courts) if (w.waiting) fill(s, w);
+    c.team1 = [...win];
+    c.team2 = two;
+    c.streak = streak;
+    c.endsAt = Date.now() + s.gameMins * 60e3;
+    return;
+  }
+  // Stack: winners line up first. Winners-stay: champs just had their run, so they line up last.
+  s.queue.push(...(s.mode === "winners" ? [...lose, ...win] : [...win, ...lose]));
+  Object.assign(c, court(c.id));
+  for (const w of s.courts) if (w.waiting) fill(s, w); // a court held for mixing goes first
+  // Only the same 4 are free while another court plays: hold this court so the groups can mix.
+  const four = group(s, 4);
+  if (four && four.every((id) => off.includes(id)) && s.courts.some((x) => x.team1.length)) c.waiting = true;
+  else fill(s, c, four);
+}
+
+// Lock in who is "Up next" (4 players, or 2 challengers in winners-stay) so the next court to finish
+// gets exactly the players shown. Called after every action. If the only waiting 4 all just played
+// one game together, lock 2 and leave 2 spots for players off the next court, so groups keep mixing.
+function settle(s) {
+  const el = eligible(s);
+  s.next = (s.next ?? []).filter((id) => el.includes(id));
+  if (s.courts.some((c) => c.waiting)) { s.next = []; return; } // the held court picks a fresh mix
+  const n = s.mode === "winners" ? 2 : 4;
+  s.next = s.next.slice(0, n);
+  if (s.next.length < n) s.next = [...s.next, ...(pick(s, n - s.next.length, s.next) ?? [])];
+  const last = player(s, s.next[0])?.last;
+  if (n === 4 && s.next.length === 4 && last && s.next.every((id) => player(s, id).last === last)) s.next = s.next.slice(0, 2);
+}
+
+// What the "Up next" panel shows: the locked players, their teams when all 4 are set, and open spots.
+function nextUp(s) {
+  const n = s.mode === "winners" ? 2 : 4;
+  const ids = s.next ?? [];
+  return { ids, teams: ids.length === 4 ? split(s, ids) : null, open: Math.max(0, n - ids.length), holding: s.courts.find((c) => c.waiting)?.id ?? null };
+}
+
+// Fix a logged game: switch the winner and/or change the points. Stats are recalculated from the log.
+function editMatch(s, id, { winner, score }) {
+  const m = s.matches?.find((x) => x.id === id);
+  if (!m) return;
+  snap(s);
+  if (score !== undefined) m.score = score;
+  // Switching the winner against the points means the points went on the wrong rows: swap them.
+  if (winner && m.score && byScore(winner, m.score) !== winner) m.score = [m.score[1], m.score[0]];
+  m.winner = byScore(winner ?? m.winner, m.score);
+}
+
+function setCourts(s, n) {
+  snap(s);
+  while (s.courts.length < n) s.courts.push(court(s.courts.length + 1));
+  while (s.courts.length > n) {
+    const c = s.courts.pop();
+    s.queue.unshift(...c.team1, ...c.team2);
+  }
+}
+
+// Clears games, courts and the queue; everyone goes back to the roster to be checked in.
+function newSession(s) {
+  snap(s);
+  for (const c of s.courts) Object.assign(c, court(c.id));
+  s.queue = [];
+  for (const p of s.players) Object.assign(p, { prio: 0, out: true, paused: false });
+  s.met = {}; s.mates = {}; s.matches = [];
+}
+
+// Likely next players, in the order the rotation favours (fewest games, then longest waiting).
+function upNext(s) {
+  const pos = new Map(s.queue.map((id, i) => [id, i]));
+  const next = s.next ?? [];
+  return [...next, ...eligible(s).filter((id) => !next.includes(id)).sort((a, b) => prio(s, a) - prio(s, b) || pos.get(a) - pos.get(b))];
+}
+
+// Wins, losses, points and games, all derived from the match log.
+function stats(s) {
+  const t = new Map(s.players.map((p) => [p.id, { games: 0, w: 0, l: 0, pf: 0, pa: 0 }]));
+  for (const m of s.matches ?? []) {
+    const [a, b] = m.score ?? [0, 0];
+    for (const [team, won, f, ag] of [[m.t1, m.winner === 1, a, b], [m.t2, m.winner === 2, b, a]]) {
+      for (const id of team) {
+        const x = t.get(id);
+        if (!x) continue; // player since removed
+        x.games++; x[won ? "w" : "l"]++; x.pf += f; x.pa += ag;
+      }
+    }
+  }
+  return t;
+}
+const leaderboard = (s) => {
+  const st = stats(s);
+  return s.players.map((p) => ({ ...p, ...st.get(p.id) }))
+    .sort((a, b) => b.w - a.w || (b.pf - b.pa) - (a.pf - a.pa) || a.games - b.games);
+};
+
+return { newState, undo, player, addPlayer, checkIn, checkOut, setLevel, removePlayer, togglePause, replacePlayer, fillCourt, endGame, settle, nextUp, editMatch, setCourts, newSession, upNext, stats, leaderboard };
+})();
+
+const KEY = "tantrums-queue";
+let s;
+try { s = JSON.parse(localStorage.getItem(KEY)); } catch {}
+s ||= Q.newState();
+Q.settle(s);
+let tab = "courts";
+let level = 2;
+const LV = { 1: "B", 2: "I", 3: "A" };
+const esc = (t) => String(t).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+const name = (id) => { const p = Q.player(s, id); if (!p) return '<span class="muted">Removed player</span>'; return `${esc(p.name)}<span class="chip l${p.level}">${LV[p.level]}</span>`; };
+// A tappable name (court cards, Up next) that opens the swap list.
+const pbtn = (id) => `<button class="pname" data-act="swap" data-id="${id}" aria-label="Swap out ${esc(Q.player(s, id)?.name ?? "")}">${name(id)}</button>`;
+let swapFor = null;
+function swapSheet() {
+  const p = Q.player(s, swapFor);
+  const c = s.courts.find((x) => x.team1.includes(swapFor) || x.team2.includes(swapFor));
+  const inNext = (s.next ?? []).includes(swapFor);
+  if (!p || (!c && !inNext)) { swapFor = null; return ""; }
+  const st = Q.stats(s);
+  const opts = Q.upNext(s).filter((id) => !(inNext && s.next.includes(id)));
+  return `<div class="sheet-bg" data-act="swapcancel"><div class="sheet" data-act="noop" role="dialog" aria-label="Swap player">
+    <h2 class="display">Swap out ${esc(p.name)}</h2>
+    <p class="muted">${c ? `On Court ${c.id}` : "Up next"}. Pick who plays instead. ${esc(p.name)} sits out and keeps their place in line; tap <b>Back in</b> on the Queue tab when they return.</p>
+    ${opts.length ? `<div class="opts">${opts.map((id) => `<button class="opt" data-act="swapto" data-id="${id}"><span>${name(id)}</span><span class="muted">${st.get(id).games} played</span></button>`).join("")}</div>`
+      : `<p class="empty">No one is waiting to swap in.</p>`}
+    <button class="btn" style="width:100%" data-act="swapcancel">Cancel</button>
+  </div></div>`;
+}
+const lvBtn = (p) => `<button class="chip l${p.level} chipbtn" data-act="level" data-id="${p.id}" aria-label="Level ${["Beginner", "Intermediate", "Advanced"][p.level - 1]}, tap to change">${LV[p.level]}</button>`;
+const waiting = () => s.queue.filter((id) => !Q.player(s, id).paused).length;
+
+// Saved on this device after every tap. Inside a Claude artifact it's also synced to the artifact's
+// database, so another phone can pick up the session. One write at a time; the newest state wins.
+let ref = null, writing = false, dirty = false;
+const status = (t) => { document.getElementById("sync").textContent = t; };
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {}
+  if (ref) push();
+}
+async function push() {
+  if (writing) { dirty = true; return; }
+  writing = true;
+  status("SAVING…");
+  let retry = false;
+  try {
+    do { dirty = false; await ref.set({ state: JSON.stringify(s) }); } while (dirty);
+    status("SAVED ✓");
+  } catch (e) {
+    // Too big for one save (very long session): keep less undo history and try again.
+    if (e?.code === "invalid_argument" && s.history.length > 2) { s.history = s.history.slice(-2); retry = true; }
+    else { status("NOT SAVED · CHECK INTERNET"); setTimeout(() => ref && !writing && push(), 5000); }
+  } finally { writing = false; }
+  if (retry) push();
+}
+window.claude?.use?.("db").then((db) => {
+  if (!db) return;
+  ref = db.doc("sessions/current");
+  ref.onSnapshot((snap) => {
+    if (writing) return;
+    const remote = snap.data()?.state;
+    if (!remote) return s.players.length ? push() : status("SAVED ✓"); // first run: upload this device's session
+    if (remote !== JSON.stringify(s)) { s = JSON.parse(remote); try { localStorage.setItem(KEY, remote); } catch {} render(); }
+    status("SAVED ✓");
+  }, () => status("SYNC OFF · SAVED ON THIS PHONE"));
+});
+function act(fn) { fn(); Q.settle(s); save(); render(); }
+
+// Two-tap confirm (artifacts block confirm() dialogs).
+function confirmTap(t, fn) {
+  if (t.dataset.armed) return act(fn);
+  t.dataset.armed = 1;
+  t.textContent = t.dataset.ask || "Tap again to confirm";
+  setTimeout(render, 3000);
+}
+
+// The locked next group goes to whichever court finishes first; the rest of the line follows.
+function upNextHTML() {
+  const nu = Q.nextUp(s);
+  const nb = isTV() ? name : pbtn;
+  const rest = Q.upNext(s).filter((id) => !nu.ids.includes(id));
+  const group = nu.holding
+    ? `<p class="unote">Court ${nu.holding} is holding so players can mix. Its players are picked when the next court finishes.</p>`
+    : !nu.ids.length ? `<p class="unote">Waiting for more players.</p>`
+    : nu.teams ? `<div class="ugroup"><span>${nu.teams[0].map(nb).join(" &amp; ")}</span><span class="uvs">VS</span><span>${nu.teams[1].map(nb).join(" &amp; ")}</span></div>`
+    : `<div class="ugroup"><span>${nu.ids.map(nb).join(" &amp; ")}</span>${nu.open ? `<span class="uopen">+ ${nu.open} off the next court to finish</span>` : ""}</div>`;
+  return `<section class="upnext" aria-label="Up next">
+    <div class="uhead"><span class="display">${s.mode === "winners" ? "NEXT CHALLENGERS" : "UP NEXT"}</span><span class="uto">→ next court to finish</span></div>
+    ${group}
+    ${rest.length ? `<div class="uthen"><b>Then</b>${rest.map((id, i) => `<span class="uq"><i>${i + 1}</i>${name(id)}</span>`).join("")}</div>` : ""}
+  </section>`;
+}
+
+const views = {
+  courts: () => `
+    <h2 class="display">Courts <span class="badge">${waiting()} waiting</span></h2>
+    <p class="muted hint">Player can't play? Tap their name to swap in someone who's waiting.</p>
+    <div class="grid">${s.courts.map((c) => c.team1.length ? `
+      <div class="card">
+        <div class="court-head"><span class="display">Court ${c.id} ${c.streak ? `<span class="badge">🔥 ${c.streak} win</span>` : ""}</span>
+          <span class="timer" data-ends="${c.endsAt}">--:--</span></div>
+        <div class="team"><span class="names">${c.team1.map(pbtn).join(" &amp; ")}</span><input id="sc${c.id}a" type="number" inputmode="numeric" placeholder="pts"></div>
+        <div class="vs">VS</div>
+        <div class="team"><span class="names">${c.team2.map(pbtn).join(" &amp; ")}</span><input id="sc${c.id}b" type="number" inputmode="numeric" placeholder="pts"></div>
+        <div class="row2">
+          <button class="btn red" data-act="win" data-court="${c.id}" data-team="1">Top won</button>
+          <button class="btn red" data-act="win" data-court="${c.id}" data-team="2">Bottom won</button>
+        </div>
+      </div>` : `
+      <div class="card">
+        <div class="court-head"><span class="display">Court ${c.id}</span><span class="muted">${c.waiting ? "Mixing" : "Empty"}</span></div>
+        <div class="empty">${c.waiting ? "Waiting for another court to finish so players can mix" : waiting() < 4 ? "Need 4 players waiting" : "Ready for the next 4"}</div>
+        <button class="btn ${c.waiting ? "" : "orange"}" style="width:100%;margin-top:10px" data-act="fill" data-court="${c.id}" ${waiting() < 4 ? "disabled" : ""}>${c.waiting ? "Play anyway" : "Fill court"}</button>
+      </div>`).join("")}</div>
+    ${upNextHTML()}`,
+
+  queue: () => {
+    const st = Q.stats(s);
+    const out = s.players.filter((p) => p.out).sort((a, b) => a.name.localeCompare(b.name));
+    return `
+    <h2 class="display">Queue</h2>
+    <form class="add" id="add">
+      <input name="n" placeholder="Name: add or check in" autocomplete="off" required>
+      <div class="seg">${[1, 2, 3].map((l) => `<label><input type="radio" name="lv" value="${l}" aria-label="${["Beginner", "Intermediate", "Advanced"][l - 1]}" ${l === level ? "checked" : ""}><span>${LV[l]}</span></label>`).join("")}</div>
+      <button class="btn red">Add</button>
+    </form>
+    ${s.queue.length ? `<ol class="q">${s.queue.map((id, i) => { const p = Q.player(s, id); return `
+      <li class="${p.paused ? "paused" : ""}"><span class="n">${i + 1}</span>
+        <span class="name">${esc(p.name)}${lvBtn(p)}<div class="meta">${p.paused ? "Sitting out" : `${st.get(id).games} played`}</div></span>
+        <button class="btn" data-act="pause" data-id="${id}">${p.paused ? "Back in" : "Sit out"}</button>
+        <button class="btn ghost" data-act="checkout" data-id="${id}" aria-label="Check out ${esc(p.name)}" title="Check out (stays in roster)">✕</button>
+      </li>`; }).join("")}</ol>` : `<p class="empty">No one waiting. Check players in from the roster below.</p>`}
+    <p class="muted">${s.courts.reduce((n, c) => n + c.team1.length + c.team2.length, 0)} on court. Tap a level badge to change it. B = beginner, I = intermediate, A = advanced.</p>
+    <h2 class="display" style="margin-top:22px">Roster <span class="badge">${out.length} not here</span></h2>
+    ${out.length ? `<p class="muted">Tap <b>Check in</b> when someone arrives. Typing in the name box filters this list.</p>
+    <ul class="q roster">${out.map((p) => `
+      <li data-name="${esc(p.name.toLowerCase())}">
+        <span class="name">${esc(p.name)}${lvBtn(p)}</span>
+        <button class="btn red" data-act="checkin" data-id="${p.id}">Check in</button>
+        <button class="btn ghost" data-act="remove" data-ask="Delete?" data-id="${p.id}" aria-label="Delete ${esc(p.name)} from roster">🗑</button>
+      </li>`).join("")}</ul>` : `<p class="muted">Everyone in the roster is here. Players stay in the roster after each session.</p>`}`;
+  },
+
+  log: () => {
+    const ms = [...(s.matches ?? [])].reverse();
+    const time = (at) => new Date(at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const team = (m, n) => `
+      <div class="team ${m.winner === n ? "won" : ""}">
+        <span class="names">${m["t" + n].map(name).join(" &amp; ")}</span>
+        <input id="m${m.id}s${n}" data-match="${m.id}" type="number" inputmode="numeric" placeholder="pts" aria-label="Points" value="${m.score ? m.score[n - 1] : ""}">
+        <button class="pill" data-act="setwin" data-match="${m.id}" data-team="${n}" aria-pressed="${m.winner === n}">${m.winner === n ? "WON" : "Set winner"}</button>
+      </div>`;
+    return `
+    <h2 class="display">Match log</h2>
+    <p class="muted">Fix a mistake: change the points or tap <b>Set winner</b>. The leaderboard updates right away.</p>
+    ${ms.length ? `<div class="grid">${ms.map((m) => `
+      <div class="card">
+        <div class="court-head"><span class="display">Game ${m.id}</span><span class="muted">Court ${m.court} · ${time(m.at)}</span></div>
+        ${team(m, 1)}<div class="vs">VS</div>${team(m, 2)}
+      </div>`).join("")}</div>` : `<p class="empty">No games yet. Finished games show up here.</p>`}`;
+  },
+
+  stats: () => `
+    <h2 class="display">Leaderboard</h2>
+    ${s.players.length ? `<table><tr><th>#</th><th>PLAYER</th><th class="num">W-L</th><th class="num">+/-</th><th class="num">GP</th></tr>
+      ${Q.leaderboard(s).filter((p) => p.games || !p.out).map((p, i) => `<tr><td>${i + 1}</td><td>${name(p.id)}</td><td class="num">${p.w}-${p.l}</td><td class="num">${p.pf - p.pa > 0 ? "+" : ""}${p.pf - p.pa}</td><td class="num">${p.games}</td></tr>`).join("")}
+    </table>` : `<p class="empty">No players yet.</p>`}`,
+
+  settings: () => `
+    <h2 class="display">Settings</h2>
+    <div class="set"><div><b>Courts</b></div><div class="stepper">
+      <button class="btn" data-act="courts" data-d="-1">−</button>${s.courts.length}<button class="btn" data-act="courts" data-d="1">+</button></div></div>
+    <div class="set"><div><b>Rotation</b><p>${s.mode === "stack" ? "All 4 off after each game." : "Winners stay, max 2 wins in a row."}</p></div>
+      <div class="seg">${[["stack", "Paddle stack"], ["winners", "Winners stay"]].map(([v, t]) => `<label><input type="radio" name="mode" value="${v}" ${s.mode === v ? "checked" : ""}><span>${t}</span></label>`).join("")}</div></div>
+    <div class="set"><div><b>Balance skill levels</b><p>Match similar levels; first in line always plays.</p></div>
+      <input type="checkbox" id="balance" ${s.balance ? "checked" : ""} style="width:28px;height:28px"></div>
+    <div class="set"><div><b>Game timer</b><p>Minutes per game.</p></div><div class="stepper">
+      <button class="btn" data-act="mins" data-d="-1">−</button>${s.gameMins}<button class="btn" data-act="mins" data-d="1">+</button></div></div>
+    <div class="actions">
+      <button class="btn orange" data-act="export">Save leaderboard image</button>
+      <button class="btn" data-act="tv">Open TV screen</button>
+      <button class="btn" data-act="session">New session</button>
+      <button class="btn ghost" data-act="wipe">Delete roster</button>
+    </div>
+    <p class="muted"><b>TV screen:</b> open this page on the TV and tap Open TV screen, or add <b>#tv</b> to the end of the link. <b>New session</b> clears games and the queue and sends everyone back to the roster.</p>`,
+};
+
+// Leaderboard as a branded 1080px-wide PNG (fits an IG/FB post or a group chat).
+function statsImage() {
+  const C = { red: "#E63A2E", orange: "#FF8A1F", cream: "#FFF4E2", ink: "#151515", line: "#E9D9BF", muted: "#8a7d6b" };
+  const F = (w, px) => `${w} ${px}px "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif`;
+  const list = Q.leaderboard(s).filter((p) => p.games);
+  const W = 1080, top = 300, rowH = 84, H = top + 90 + Math.max(list.length, 1) * rowH + 140;
+  const cv = Object.assign(document.createElement("canvas"), { width: W, height: H });
+  const g = cv.getContext("2d");
+  const box = (x, y, w, h, r, fill) => { g.beginPath(); g.roundRect(x, y, w, h, r); g.fillStyle = fill; g.fill(); };
+  const text = (t, x, y, font, color, align = "left") => { g.font = font; g.fillStyle = color; g.textAlign = align; g.fillText(t, x, y); };
+
+  g.fillStyle = C.cream; g.fillRect(0, 0, W, H);
+  // Header band with the mascot.
+  g.fillStyle = C.red; g.fillRect(0, 0, W, 240);
+  const img = document.querySelector("header img");
+  g.save(); g.beginPath(); g.arc(150, 120, 86, 0, Math.PI * 2); g.fillStyle = C.cream; g.fill(); g.clip();
+  if (img?.complete) g.drawImage(img, 64, 34, 172, 172);
+  g.restore();
+  g.lineWidth = 6; g.strokeStyle = C.cream; g.beginPath(); g.arc(150, 120, 86, 0, Math.PI * 2); g.stroke();
+  text("THE TANTRUMS", 270, 115, F(900, 72), C.cream);
+  text(`LEADERBOARD · ${new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}`.toUpperCase(), 274, 170, F(800, 30), C.cream);
+
+  // Column heads.
+  const cols = { rank: 90, name: 160, wl: 760, diff: 890, gp: 1000 };
+  box(48, top - 48, W - 96, 64, 18, C.ink);
+  text("#", cols.rank, top - 6, F(800, 24), C.cream, "center");
+  text("PLAYER", cols.name, top - 6, F(800, 24), C.cream);
+  text("W-L", cols.wl, top - 6, F(800, 24), C.cream, "center");
+  text("+/-", cols.diff, top - 6, F(800, 24), C.cream, "center");
+  text("GP", cols.gp, top - 6, F(800, 24), C.cream, "center");
+
+  if (!list.length) text("No games played yet", W / 2, top + 90, F(700, 36), C.muted, "center");
+  list.forEach((p, i) => {
+    const y = top + 30 + i * rowH;
+    box(48, y, W - 96, rowH - 12, 18, i < 3 ? "#fff" : C.cream);
+    if (i < 3) { g.lineWidth = 3; g.strokeStyle = C.ink; g.stroke(); }
+    const mid = y + (rowH - 12) / 2 + 12;
+    g.beginPath(); g.arc(cols.rank, y + (rowH - 12) / 2, 26, 0, Math.PI * 2);
+    g.fillStyle = [C.red, C.orange, C.ink][i] ?? C.line; g.fill();
+    text(String(i + 1), cols.rank, mid - 2, F(900, 28), i < 3 ? "#fff" : C.ink, "center");
+    let name = p.name;
+    g.font = F(800, 34);
+    while (g.measureText(name).width > 470 && name.length > 1) name = name.slice(0, -1);
+    if (name !== p.name) name = name.slice(0, -1) + "…";
+    text(name, cols.name, mid, F(800, 34), C.ink);
+    const nw = g.measureText(name).width;
+    box(cols.name + nw + 14, mid - 28, 40, 34, 8, [, "#FFE3C2", C.orange, C.red][p.level]);
+    text(LV[p.level], cols.name + nw + 34, mid - 2, F(900, 22), p.level === 3 ? "#fff" : C.ink, "center");
+    const d = p.pf - p.pa;
+    text(`${p.w}-${p.l}`, cols.wl, mid, F(900, 34), C.ink, "center");
+    text(`${d > 0 ? "+" : ""}${d}`, cols.diff, mid, F(800, 32), d > 0 ? "#1F8A4C" : d < 0 ? C.red : C.muted, "center");
+    text(String(p.games), cols.gp, mid, F(800, 32), C.ink, "center");
+  });
+
+  g.fillStyle = C.ink; g.fillRect(0, H - 90, W, 90);
+  text("PICKLEBALL CLUB · OPEN PLAY", W / 2, H - 34, F(800, 28), C.cream, "center");
+  return new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej()), "image/png"));
+}
+
+// Big "Now playing / Up next" board for a TV or laptop. Read-only; follows the organizer live.
+const isTV = () => location.hash === "#tv";
+function tvView() {
+  const fresh = (c) => c.endsAt && Date.now() - (c.endsAt - s.gameMins * 60e3) < 30e3;
+  return `
+  <div class="tvhead"><img src="${document.querySelector("header img").src}" alt="">
+    <div><div class="display tvtitle">THE TANTRUMS</div><div class="tvsub">OPEN PLAY · <span id="clock"></span></div></div>
+    <button class="btn tvexit" data-act="tvexit">Exit TV</button></div>
+  <div class="tvbody">
+    <div class="tvcourts">${s.courts.map((c) => `
+      <div class="tvcourt ${fresh(c) ? "fresh" : ""}">
+        <div class="tvch"><span class="display">COURT ${c.id}</span>${c.team1.length ? `<span class="timer" data-ends="${c.endsAt}"></span>` : ""}</div>
+        ${c.team1.length ? `<div class="tvteam">${c.team1.map(name).join(" &amp; ")}</div><div class="tvvs">VS</div><div class="tvteam">${c.team2.map(name).join(" &amp; ")}</div>`
+          : `<div class="tvempty">${c.waiting ? "Mixing players…" : "Open court"}</div>`}
+      </div>`).join("")}</div>
+    ${upNextHTML()}
+  </div>`;
+}
+setInterval(() => isTV() && render(), 15000); // clears the "just called" highlight
+addEventListener("hashchange", () => render());
+
+let shot = null; // { png: Blob, url: data URL } while the leaderboard image is open
+const shotSheet = () => `<div class="sheet-bg" data-act="shotclose"><div class="sheet" data-act="noop" role="dialog" aria-label="Leaderboard image">
+    <h2 class="display">Leaderboard image</h2>
+    <p class="shot-tip"><b>iPhone:</b> press and hold the image, then tap <b>Save to Photos</b>.</p>
+    <img class="shot" src="${shot.url}" alt="The Tantrums leaderboard">
+    <div class="row2">
+      <button class="btn orange" data-act="shotfile">Save as file</button>
+      <button class="btn" data-act="shotclose">Close</button>
+    </div>
+  </div></div>`;
+
+function render() {
+  document.body.classList.toggle("tv", isTV());
+  document.getElementById("app").innerHTML = isTV() ? tvView() : views[tab]() + (swapFor ? swapSheet() : "") + (shot ? shotSheet() : "");
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  document.getElementById("undo").disabled = !s.history.length;
+  tick();
+}
+
+// Countdown + one beep/vibrate per court when time runs out.
+let audio;
+const beeped = new Set();
+function beep() {
+  if (isTV()) return;
+  navigator.vibrate?.([300, 150, 300]);
+  if (!audio) return;
+  for (const t of [0, 0.35, 0.7]) {
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.frequency.value = 880; o.connect(g); g.connect(audio.destination);
+    g.gain.setValueAtTime(0.3, audio.currentTime + t); g.gain.setValueAtTime(0, audio.currentTime + t + 0.2);
+    o.start(audio.currentTime + t); o.stop(audio.currentTime + t + 0.25);
+  }
+}
+function tick() {
+  const now = Date.now();
+  const clock = document.getElementById("clock");
+  if (clock) clock.textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  for (const c of s.courts) if (c.endsAt && now >= c.endsAt && !beeped.has(c.endsAt)) { beeped.add(c.endsAt); beep(); }
+  document.querySelectorAll(".timer").forEach((el) => {
+    const left = Math.round((+el.dataset.ends - now) / 1000);
+    const a = Math.abs(left);
+    el.textContent = `${left < 0 ? "+" : ""}${Math.floor(a / 60)}:${String(a % 60).padStart(2, "0")}`;
+    el.classList.toggle("over", left <= 0);
+  });
+}
+setInterval(tick, 1000);
+// Don't beep for games that ran out before the app was (re)opened.
+s.courts.forEach((c) => c.endsAt && c.endsAt <= Date.now() && beeped.add(c.endsAt));
+
+document.addEventListener("click", (e) => {
+  audio ||= new (window.AudioContext || window.webkitAudioContext)(); // unlocked by first tap
+  const t = e.target.closest("[data-tab],[data-act]");
+  if (!t) return;
+  if (t.dataset.tab) { tab = t.dataset.tab; return render(); }
+  const id = +t.dataset.id, court = +t.dataset.court, d = +t.dataset.d;
+  switch (t.dataset.act) {
+    case "undo": return act(() => { s = Q.undo(s); });
+    case "fill": return act(() => Q.fillCourt(s, court));
+    case "win": {
+      const a = document.getElementById(`sc${court}a`).value, b = document.getElementById(`sc${court}b`).value;
+      return act(() => Q.endGame(s, court, +t.dataset.team, a !== "" && b !== "" ? [+a, +b] : undefined));
+    }
+    case "setwin": return act(() => Q.editMatch(s, +t.dataset.match, { winner: +t.dataset.team, score: logScore(+t.dataset.match, false) }));
+    case "pause": return act(() => Q.togglePause(s, id));
+    case "remove": return confirmTap(t, () => Q.removePlayer(s, id));
+    case "checkin": return act(() => Q.checkIn(s, id));
+    case "swap": swapFor = id; return render();
+    case "swapcancel": swapFor = null; return render();
+    case "noop": return;
+    case "swapto": { const out = swapFor; swapFor = null; return act(() => Q.replacePlayer(s, out, id)); }
+    case "checkout": return act(() => Q.checkOut(s, id));
+    case "level": return act(() => Q.setLevel(s, id, (Q.player(s, id).level % 3) + 1));
+    case "tv": location.hash = "tv"; return render();
+    case "tvexit": history.replaceState(null, "", location.pathname + location.search); return render();
+    case "courts": return act(() => Q.setCourts(s, Math.min(12, Math.max(1, s.courts.length + d))));
+    case "mins": return act(() => { s.gameMins = Math.min(60, Math.max(1, s.gameMins + d)); });
+    case "session": return confirmTap(t, () => Q.newSession(s));
+    case "wipe": return confirmTap(t, () => { const { history, ...rest } = s; s = { ...Q.newState(), history: [...history, JSON.stringify(rest)] }; });
+    // Show the image on screen: on iPhone, press-and-hold → Save to Photos is the only way into the
+    // gallery (downloads land in the Files app). "Save as file" stays for computers and Android.
+    case "export": return statsImage().then((png) => new Promise((res) => {
+      const r = new FileReader();
+      r.onload = () => { shot = { png, url: r.result }; res(render()); };
+      r.readAsDataURL(png);
+    })).catch(() => {});
+    case "shotclose": shot = null; return render();
+    case "shotfile": {
+      const filename = `tantrums-leaderboard-${new Date().toISOString().slice(0, 10)}.png`;
+      if (window.claude?.use) return window.claude.use("downloads").then((d) => d?.save({ filename, data: shot.png })).catch(() => {});
+      return Object.assign(document.createElement("a"), { href: shot.url, download: filename }).click();
+    }
+  }
+});
+// Both boxes filled = a score; both empty = no score; one filled = still typing.
+function logScore(id, strict = true) {
+  const a = document.getElementById(`m${id}s1`)?.value, b = document.getElementById(`m${id}s2`)?.value;
+  if (a !== "" && b !== "") return [+a, +b];
+  if (a === "" && b === "") return null;
+  return strict ? undefined : (s.matches.find((m) => m.id === id)?.score ?? null); // half-typed: keep the saved score
+}
+document.addEventListener("change", (e) => {
+  if (e.target.dataset.match) {
+    const id = +e.target.dataset.match, score = logScore(id);
+    if (score !== undefined) act(() => Q.editMatch(s, id, { score }));
+    return;
+  }
+  if (e.target.name === "lv") level = +e.target.value;
+  if (e.target.name === "mode") act(() => { s.mode = e.target.value; });
+  if (e.target.id === "balance") act(() => { s.balance = e.target.checked; });
+});
+// Typing a name filters the roster.
+document.addEventListener("input", (e) => {
+  if (e.target.name !== "n") return;
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll(".roster li").forEach((li) => { li.hidden = !!q && !li.dataset.name.includes(q); });
+});
+document.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const input = e.target.elements.n;
+  if (!input.value.trim()) return;
+  act(() => Q.addPlayer(s, input.value, level));
+  document.querySelector("#add input[name=n]").focus();
+});
+
+render();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+
+</body></html>
